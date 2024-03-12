@@ -14,15 +14,16 @@ def canUnlockAll(boxes):
     keys = set([0])
 
     # Initialize a set to track boxes can be accessed
-    accessible_boxes = set([0])
+    accessible_boxes = [0]
+    i = 0
 
     # Loop until any more boxes can't be accessed
-    while accessible_boxes:
-        box = accessible_boxes.pop()
+    while i < len(accessible_boxes):
+        box = accessible_boxes[i]
         for key in boxes[box]:
-            if key not in keys:
+            if key not in keys and key < len(boxes):
                 keys.add(key)
-                if key < len(boxes):
-                    accessible_boxes.add(key)
+                accessible_boxes.add(key)
+        i += 1
 
     return len(keys) == len(boxes)
