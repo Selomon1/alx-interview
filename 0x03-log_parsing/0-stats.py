@@ -25,7 +25,7 @@ if __name__ == "__main__":
         for line in sys.stdin:
             if total_count == 10:
                 print_stats(total_size, status_codes)
-                total_size = 1
+                total_count = 1
             else:
                 total_count += 1
 
@@ -38,7 +38,10 @@ if __name__ == "__main__":
 
             try:
                 if elems[-2] in valid_codes:
-                    valid_codes[elems[-2]] += 1
+                    if status_codes.get(elems[-2], -1) == -1:
+                        status_codes[elems[-2]] = 1
+                    else:
+                        status_codes[elems[-2]] += 1
             except IndexError:
                 pass
 
