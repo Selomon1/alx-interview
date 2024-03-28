@@ -4,40 +4,50 @@ Script to compute metrics from log data read from stdin.
 """
 
 import sys
+import signal
+import re
 
-def print_stats(total_sizes, status_codes):
+
+def signal_handler(sig, frame):
+    """ Signal handler for keyboard inturruption """
+    print_stats(total_size, status_codes)
+
+
+def print_stats(total_size, status_codes):
     """
     Prints the total file size and number of lines by status code
     """
     print("File size: {}".format(total_size))
-    for code, count in sorted(status_codes.items()):
-        if status_codes[code] != 0:
+    for code in sorted(status_codes.keys()):
+        if status_codes[code] > 0:
             print("{}: {}".format(code, status_codes[code]))
 
+signal.signal(signal.SIGINT, signal_handler)
 
-if __name__ == "__main__":
-    total_size = 0
-    status_code = {'200': 0, '301': 0, '400': 0, '401': 0, '403': 0, '404': 0, '405': 0, '500': 0}
-    lines_read = 0
+total_size = 0
+status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+line_count = 0
 
-    try:
-        for line in sys.stdin:
-            lines_read += 1
-            try:
-                parts = line.split()
-                if len(parts) >= 10:
-                    file_size = int(parts[-1])
-                    total_size += file_size
-                    status_code = parts[-2]
-                    if status_code in status_codes:
-                        status_codes[status_code] += 1
-                        if lines_read % 10 == 0:
-                            print_stats(total_size, status_codes)
-            except KeyboardInterrupt:
-                print_stats(total_size, status_codes)
-                raise
-            except Exception as e:
-                pass
-    except KeyboardInterrupt:
-        print_stats(total_size, status_codes)
-        raise
+def parse_line(line):
+    """ Parse a log entry line and extract IP, status_code """
+    match = re.match(r"^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - \[.*\] \"GET /projects/260 HTTP/1.1\" (\d{3}) (\d+)$", line)
+    if match:
+        return int(match.group(2)), int(match.group(3))
+    else:
+        return None, None
+
+try:
+    for line in sys.stdin:
+        code, size = parse_line(line.strip())
+        if code is None:
+            continue
+        total_size += size
+        status_codes[code] += 1
+        line_count += 1
+        if line_count == 10:
+            print_stats(total_size, status_codes)
+            line_count = 0
+except KeyboardInterrupt:
+    pass
+
+print_stats(total_size, status_codes)
