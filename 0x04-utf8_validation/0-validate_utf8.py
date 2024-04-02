@@ -12,7 +12,7 @@ def validUTF8(data):
 
     for byte in data:
         if bytes_to_follow == 0:
-            if byte >> 7 == 0:
+            if byte >> 7 == 0b1:
                 continue
             elif byte >> 5 == 0b110 or byte >> 5 == 0b1110:
                 bytes_to_follow = 1
