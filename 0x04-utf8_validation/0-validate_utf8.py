@@ -15,8 +15,8 @@ def validUTF8(data):
             if byte >> 7:
                 continue
             elif byte >> 5 == 0b110 or byte >> 5 == 0b1110:
-                bytes_to_follow = 3
-            elif byte >> 5 == 0b1110:
+                bytes_to_follow = 1
+            elif byte >> 4 == 0b1110:
                 bytes_to_follow = 2
             elif byte >> 3 == 0b11110:
                 bytes_to_follow = 3
