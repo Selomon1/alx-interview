@@ -2,6 +2,30 @@
 """Module for determining the winner of multiple  of prime removal game."""
 
 
+def sieve_eratosthenes(max_n):
+    """List of prime numbers."""
+    is_prime = [True] * (max_n + 1)
+    is_prime[0] = is_prime[1] = False
+
+    for start in range(2, int(max_n ** 0.5) + 1):
+        if is_prime[start]:
+            for i in range(start * start, max_n + 1, start):
+                is_prime[i] = False
+
+    return is_prime
+
+
+def count_primes_up_to(max_n, is_prime):
+    """Return list of the count of primes."""
+    prime_count = [0] * (max_n + 1)
+    count = 0
+    for i in range(1, max_n + 1):
+        if is_prime[i]:
+            count += 1
+        prime_count[i] = count
+    return prime_count
+
+
 def isWinner(x, nums):
     """
     Determine the winner of rounds of a prime removal game.
@@ -14,33 +38,25 @@ def isWinner(x, nums):
         str or None: Name of the player
 
     """
-    def generate_primes_up_to(n):
-        """Generate a list of prime numbers up to 'max_number' using sieve."""
-        if n < 2:
-            return False
-        for i in range(2, int(n**0.5) + 1):
-            if n % i == 0:
-                return False
-        return True
+    if not nums or x <= 0:
+        return None
 
-    def game(n):
-        primes = [i for i in range(2, n + 1) if generate_primes_up_to(i)]
-        player = 0
-        while primes:
+    max_n = max(nums)
+    is_prime = sieve_eratosthenes(max_n)
+    prime_count = count_primes_up_to(max_n, is_prime)
 
-            for prime in primes:
-                primes = [p for p in primes if p % prime != 0]
-                player = 1 - player
-                break
-        return player
+    maria_wins = 0
+    ben_wins = 0
 
-    score = [0, 0]
     for n in nums:
-        score[game(n)] += 1
+        if prime_count[n] % 2 == 0:
+            ben_wins += 1
+        else:
+            maria_wins += 1
 
-    if score[0] > score[1]:
+    if maria_wins > ben_wins:
         return "Maria"
-    elif score[0] < score[1]:
+    elif ben_wins > maria_wins:
         return "Ben"
     else:
         return None
