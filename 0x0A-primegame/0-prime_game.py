@@ -14,46 +14,49 @@ def isWinner(x, nums):
         str or None: Name of the player
 
     """
-    def sieve_of_eratosthenes(max_num):
+    def generate_primes_up_to(n):
         """Generate a list of prime numbers up to 'max_number' using sieve."""
-        is_prime = [True] * (max_num + 1)
+        if n < 2:
+            return []
+        sieve = [True] * (n + 1)
         p = 2
-        while (p * p <= max_num):
-            if is_prime[p]:
-                for i in range(p * p, max_num + 1, p):
-                    is_prime[i] = False
+        while p * p <= n:
+            if sieve[p] == True:
+                for i in range(p * p, n + 1, p):
+                    sieve[i] = False
 
             p += 1
-        is_prime[0], is_prime[1] = False, False
-        primes = [p for p in range(max_num + 1) if is_prime[p]]
-        return primes
+        return [p for p in range(2, n + 1) if sieve[p]]
 
-    max_n = max(nums)
-    primes = sieve_of_eratosthenes(max_n)
+    def can_win(n):
+        primes = generate_primes_up_to(n)
+        if not primes:
+            return False
+
+        turn = 0
+        remaining_numbers = set(range(1, n + 1))
+
+        while True:
+            possible_moves = [p for p in primes if p in remaining_numbers]
+            if not possible_moves:
+                return turn
+
+            for move in possible_moves:
+                for num in range(move, n + 1, move):
+                    if num in remaining_numbers:
+                        remaining_numbers.remove(num)
+
+            turn = 1 - turn
 
     maria_wins = 0
     ben_wins = 0
 
     for n in nums:
-        available_primes = [p for p in primes if p <= n]
-        remaining_numbers = set(range(1, n + 1))
-
-        turn = 0
-        while True:
-            if not available_primes:
-                break
-
-            chosen_prime = available_primes.pop(0)
-            multiples = set(range(chosen_prime, n + 1, chosen_prime))
-
-            remaining_numbers.difference_update(multiples)
-
-            turn = 1 - turn
-
-        if turn == 0:
-            ben_wins += 1
-        else:
+        winner = can_win(n)
+        if winner == 0:
             maria_wins += 1
+        elif winner == 1:
+            ben_wins += 1
 
     if maria_wins > ben_wins:
         return "Maria"
