@@ -17,50 +17,30 @@ def isWinner(x, nums):
     def generate_primes_up_to(n):
         """Generate a list of prime numbers up to 'max_number' using sieve."""
         if n < 2:
-            return []
-        sieve = [True] * (n + 1)
-        p = 2
-        while p * p <= n:
-            if sieve[p] == True:
-                for i in range(p * p, n + 1, p):
-                    sieve[i] = False
-
-            p += 1
-        return [p for p in range(2, n + 1) if sieve[p]]
-
-    def can_win(n):
-        primes = generate_primes_up_to(n)
-        if not primes:
             return False
+        for i in range(2, int(n**0.5) + 1):
+            if n % i == 0:
+                return False
+        return True
 
-        turn = 0
-        remaining_numbers = set(range(1, n + 1))
+    def game(n):
+        primes = [i for i in range(2, n + 1) if generate_primes_up_to(i)]
+        player = 0
+        while primes:
 
-        while True:
-            possible_moves = [p for p in primes if p in remaining_numbers]
-            if not possible_moves:
-                return turn
+            for prime in primes:
+                primes = [p for p in primes if p % prime != 0]
+                player = 1 - player
+                break
+        return player
 
-            for move in possible_moves:
-                for num in range(move, n + 1, move):
-                    if num in remaining_numbers:
-                        remaining_numbers.remove(num)
-
-            turn = 1 - turn
-
-    maria_wins = 0
-    ben_wins = 0
-
+    score = [0, 0]
     for n in nums:
-        winner = can_win(n)
-        if winner == 0:
-            maria_wins += 1
-        elif winner == 1:
-            ben_wins += 1
+        score[game(n)] += 1
 
-    if maria_wins > ben_wins:
+    if score[0] > score[1]:
         return "Maria"
-    elif ben_wins > maria_wins:
+    elif score[0] < score[1]:
         return "Ben"
     else:
         return None
